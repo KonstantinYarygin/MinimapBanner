@@ -1,30 +1,31 @@
 import sublime, sublime_plugin
 import string
+import os
 
-def load_banner_lettets():
+SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
+LETTER_WIDTH = 7
+
+def load_banner_letters():
     symbols = string.ascii_uppercase + string.digits + string.punctuation
-    letter_width = 7
-
     symbol2image = {}
-    with open('banner_letters.txt', 'r') as f:
+    letters_path = os.path.join(SCRIPT_DIR, 'banner_letters.txt')
+    with open(letters_path, 'r') as f:
         for symbol in symbols:
-            chunk = [f.readline().strip('\n') for _ in range(letter_width)]
+            chunk = [f.readline().strip('\n') for _ in range(LETTER_WIDTH)]
             max_len = max(len(line) for line in chunk)
             chunk = [line.ljust(max_len) for line in chunk]
             symbol2image[symbol] = chunk
     return symbol2image
 
 def make_banner(text, symbol2image):
-    letter_width = 7
-
     text = text.upper()
-    banner = ['' for _ in range(letter_width)]
+    banner = ['' for _ in range(LETTER_WIDTH)]
     for symbol in text:
         if symbol in symbol2image:
-            for row in range(letter_width):
+            for row in range(LETTER_WIDTH):
                 banner[row] += symbol2image[symbol][row] + ' '
         else:
-            for row in range(letter_width):
+            for row in range(LETTER_WIDTH):
                 banner[row] += 3 * ' ' + ' '
     banner = [line + '\n' for line in banner]
     banner[-1] = banner[-1][:-1]
@@ -44,7 +45,7 @@ def add_comment_prefix(text, view, pos):
 
 class ConvertToBannerCommand(sublime_plugin.TextCommand):
     def run(self, edit):
-        symbol2image = load_banner_lettets()
+        symbol2image = load_banner_letters()
         sels = self.view.sel()
         for sel in sels:
             text = self.view.substr(sel)
